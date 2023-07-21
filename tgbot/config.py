@@ -8,7 +8,8 @@ class DbConfig:
     host: str
     password: str
     user: str
-    database: str
+    name: str
+    port: str
 
 
 @dataclass
@@ -20,7 +21,11 @@ class TgBot:
 
 @dataclass
 class Miscellaneous:
-    other_params: str = None
+    api_key: str
+    api_host: str
+    url_search: str
+    url_list: str
+    url_detail: str
 
 
 @dataclass
@@ -41,10 +46,17 @@ def load_config(path: str = None):
             use_redis=env.bool("USE_REDIS"),
         ),
         db=DbConfig(
-            host=env.str('DB_HOST'),
-            password=env.str('DB_PASS'),
-            user=env.str('DB_USER'),
-            database=env.str('DB_NAME')
+            host=env.str('POSTGRES_HOST'),
+            password=env.str('POSTGRES_PASSWORD'),
+            user=env.str('POSTGRES_USER'),
+            database=env.str('POSTGRES_DB'),
+            port=env.str('POSTGRES_PORT')
         ),
-        misc=Miscellaneous()
+        misc=Miscellaneous(
+            api_key=env.str("RAPID_API_KEY"),
+            api_host=env.str("API_HOST"),
+            url_search=env.str("URL_SEARCH"),
+            url_list=env.str("URL_LIST"),
+            url_detail=env.str("URL_DETAIL"),
+        )
     )
