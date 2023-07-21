@@ -10,6 +10,7 @@ from tgbot.filters.admin import AdminFilter
 from tgbot.handlers.admin import register_admin
 from tgbot.handlers.echo import register_echo
 from tgbot.handlers.lowprice import register_lowprice
+from tgbot.handlers.polling import register_polling
 from tgbot.handlers.start import register_start
 from tgbot.handlers.help import register_help
 from tgbot.middlewares.environment import EnvironmentMiddleware
@@ -31,6 +32,7 @@ def register_all_handlers(dp):
     register_start(dp)
     register_help(dp)
     register_lowprice(dp)
+    register_polling(dp)
 
     register_echo(dp)
 
