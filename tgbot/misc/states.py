@@ -8,7 +8,7 @@ class UsersStates(StatesGroup):
 
     Attributes:
         last_command (str): команда, которую ввёл пользователь.
-        city (str): город, в котором ищем отели.
+        city_name (str): город, в котором ищем отели.
         city_id (str): id города, в котором ищем отели.
         cities (Dict): подходящие по названию города, из которых пользователь выбирает нужный ему.
         amount_hotels (int): количество отелей.
@@ -20,8 +20,9 @@ class UsersStates(StatesGroup):
         end_price (int): максимальная цена за ночь.
         end_distance (float): максимальная дистанция до центра города.
     """
+
     last_command = State()
-    city = State()
+    city_name = State()
     city_id = State()
     cities = State()
     amount_hotels = State()
