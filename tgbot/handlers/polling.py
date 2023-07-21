@@ -6,9 +6,9 @@ from aiogram.types import Message, CallbackQuery
 
 from telegram_bot_calendar import DetailedTelegramCalendar
 from tgbot.config import Config
-from tgbot.keyboards.inline import print_cities
+from tgbot.keyboards.inline import print_cities, amount_photo
 from tgbot.misc.states import UsersStates
-from tgbot.services.factories import for_city
+from tgbot.services.factories import for_city, for_photo
 from tgbot.services.get_cities import parse_cities_group
 
 
@@ -48,32 +48,26 @@ async def get_amount_hotels(message: Message, config: Config, state: FSMContext)
         if 1 <= amount_hotels <= 10:
             async with state.proxy() as data:
                 data['amount_hotels'] = amount_hotels
-            await message.answer('Желаете загрузить фото отелей? Введите число:\n'
-                                 '0 - нет\n'
-                                 '10 - загрузить 10 фото.')
-            await UsersStates.amount_photo.set()
+            await message.answer('Желаете загрузить фото отелей?', reply_markup=amount_photo)
         else:
             raise ValueError
     except ValueError:
         await message.answer('Введите число от 1 до 10')
 
 
-async def get_amount_photos(message: Message, config: Config, state: FSMContext):
-    try:
-        amount_photo = int(message.text)
-        if 0 <= amount_photo <= 10:
-            async with state.proxy() as data:
-                data['amount_photo'] = amount_photo
-            calendar, step = DetailedTelegramCalendar(min_date=date.today()).build()
-            await message.answer('Введите дату заезда', reply_markup=calendar)
-        else:
-            raise ValueError
-    except ValueError:
-        await message.answer('Введите число от 1 до 10')
+async def get_amount_photos(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
+    await call.message.edit_reply_markup(reply_markup=None)
+    amount_photos = callback_data.get('amount')
+    async with state.proxy() as data:
+        data['amount_photo'] = amount_photos
+    states = await state.get_data()
+    print(states)
+    calendar, step = DetailedTelegramCalendar(min_date=date.today()).build()
+    await call.message.answer('Введите дату заезда', reply_markup=calendar)
 
 
 def register_polling(dp: Dispatcher):
     dp.register_message_handler(get_cities_group, state=UsersStates.cities),
     dp.register_callback_query_handler(clarify_city, for_city.filter(), state="*"),
     dp.register_message_handler(get_amount_hotels, state=UsersStates.amount_hotels),
-    dp.register_message_handler(get_amount_photos, state=UsersStates.amount_photo),
+    dp.register_callback_query_handler(get_amount_photos, for_photo.filter(), state="*"),
