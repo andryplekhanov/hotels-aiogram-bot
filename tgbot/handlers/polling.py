@@ -6,9 +6,9 @@ from aiogram.types import Message, CallbackQuery
 
 from telegram_bot_calendar import DetailedTelegramCalendar
 from tgbot.config import Config
-from tgbot.keyboards.inline import print_cities, amount_photo
+from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels
 from tgbot.misc.states import UsersStates
-from tgbot.services.factories import for_city, for_photo
+from tgbot.services.factories import for_city, for_photo, for_hotels
 from tgbot.services.get_cities import parse_cities_group
 
 
@@ -37,22 +37,17 @@ async def clarify_city(call: CallbackQuery, callback_data: dict, state: FSMConte
         data['city_id'] = callback_data.get('city_id')
         data['city_name'] = callback_data.get('city_name')
 
-    await call.message.answer('Сколько отелей найти?')
+    await call.message.answer('Сколько отелей найти?', reply_markup=amount_hotels)
     await UsersStates.amount_hotels.set()
     await call.message.delete()
 
 
-async def get_amount_hotels(message: Message, config: Config, state: FSMContext):
-    try:
-        amount_hotels = int(message.text)
-        if 1 <= amount_hotels <= 10:
-            async with state.proxy() as data:
-                data['amount_hotels'] = amount_hotels
-            await message.answer('Желаете загрузить фото отелей?', reply_markup=amount_photo)
-        else:
-            raise ValueError
-    except ValueError:
-        await message.answer('Введите число от 1 до 10')
+async def get_amount_hotels(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
+    await call.message.edit_reply_markup(reply_markup=None)
+    hotels_number = callback_data.get('amount')
+    async with state.proxy() as data:
+        data['amount_hotels'] = hotels_number
+    await call.message.answer('Желаете загрузить фото отелей?', reply_markup=amount_photo)
 
 
 async def get_amount_photos(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
@@ -69,5 +64,5 @@ async def get_amount_photos(call: CallbackQuery, callback_data: dict, state: FSM
 def register_polling(dp: Dispatcher):
     dp.register_message_handler(get_cities_group, state=UsersStates.cities),
     dp.register_callback_query_handler(clarify_city, for_city.filter(), state="*"),
-    dp.register_message_handler(get_amount_hotels, state=UsersStates.amount_hotels),
+    dp.register_callback_query_handler(get_amount_hotels, for_hotels.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_photos, for_photo.filter(), state="*"),
