@@ -17,13 +17,10 @@ async def request_to_api(
     try:
         if method == 'GET':
             response = requests.get(url=url, params=querystring, headers=headers)
-            if response.status_code == requests.codes.ok:
-                return response
-            return None
-        elif method == 'POST':
+        else:
             response = requests.post(url, json=querystring, headers=headers)
-            if response.status_code == requests.codes.ok:
-                return response
-            return None
+        if response.status_code == requests.codes.ok:
+            return response
+        return None
     except Exception:
         return None
