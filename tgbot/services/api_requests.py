@@ -16,11 +16,14 @@ async def request_to_api(
 
     try:
         if method == 'GET':
-            request = requests.get(url=url, params=querystring, headers=headers)
-            if request.status_code == requests.codes.ok:
-                return request
+            response = requests.get(url=url, params=querystring, headers=headers)
+            if response.status_code == requests.codes.ok:
+                return response
             return None
         elif method == 'POST':
-            pass  # TODO
+            response = requests.post(url, json=querystring, headers=headers)
+            if response.status_code == requests.codes.ok:
+                return response
+            return None
     except Exception:
         return None
