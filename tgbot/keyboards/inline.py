@@ -2,7 +2,7 @@ from typing import Tuple, List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from tgbot.services.factories import for_city, for_photo, for_hotels
+from tgbot.misc.factories import for_city, for_photo, for_hotels
 
 
 def print_cities(cities_list: List[Tuple]) -> InlineKeyboardMarkup:

@@ -6,7 +6,7 @@ from aiogram_calendar import dialog_cal_callback, DialogCalendar
 from tgbot.config import Config
 from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels
 from tgbot.misc.states import UsersStates
-from tgbot.services.factories import for_city, for_photo, for_hotels
+from tgbot.misc.factories import for_city, for_photo, for_hotels
 from tgbot.services.get_cities import parse_cities_group
 
 
@@ -100,8 +100,18 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
         else:
             async with state.proxy() as data:
                 data['amount_nights'] = nights_num
+
             states = await state.get_data()
-            print(states)
+            if states.get('last_command') in ['highprice', 'lowprice']:
+                await low_high_price_answer(states)
+                await message.answer(
+                    "😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: <b>/help</b>",
+                    parse_mode='html'
+                )
+            else:
+                await UsersStates.cities.set()
+                await message.answer("Введите минимальную цену за ночь $:")
+
     except ValueError:
         await message.answer("⚠️ Введите число больше нуля")
 
