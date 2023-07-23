@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -8,6 +10,7 @@ from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels
 from tgbot.misc.states import UsersStates
 from tgbot.misc.factories import for_city, for_photo, for_hotels
 from tgbot.services.get_cities import parse_cities_group
+from tgbot.services.ready_for_answer import low_high_price_answer, get_prereply_str
 
 
 async def get_cities_group(message: Message, config: Config, state: FSMContext):
@@ -78,7 +81,7 @@ async def process_startdate_calendar(call: CallbackQuery, callback_data: dict, s
 
     selected, sdate = await DialogCalendar().process_selection(call, callback_data)
     if selected:
-        await call.message.answer(f'{sdate.strftime("%d.%m.%Y")}')
+        # await call.message.answer(f'{sdate.strftime("%d.%m.%Y")}')
         async with state.proxy() as data:
             data['start_date'] = sdate
         await UsersStates.amount_nights.set()
@@ -88,7 +91,7 @@ async def process_startdate_calendar(call: CallbackQuery, callback_data: dict, s
 async def get_amount_nights(message: Message, config: Config, state: FSMContext):
     """
     Функция, ожидающая ввод количества ночей.
-    Записывает состояние пользователя 'amount_nights'.
+    Записывает состояние пользователя 'amount_nights' и 'end_date'.
     ДОПИСАТЬ ТЕКСТ
     """
 
@@ -100,20 +103,26 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
         else:
             async with state.proxy() as data:
                 data['amount_nights'] = nights_num
-
-            states = await state.get_data()
-            if states.get('last_command') in ['highprice', 'lowprice']:
-                await low_high_price_answer(states)
-                await message.answer(
-                    "😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: <b>/help</b>",
-                    parse_mode='html'
-                )
-            else:
-                await UsersStates.cities.set()
-                await message.answer("Введите минимальную цену за ночь $:")
-
+                data['end_date'] = data.get('start_date') + timedelta(nights_num)
     except ValueError:
         await message.answer("⚠️ Введите число больше нуля")
+
+    states = await state.get_data()
+
+    if states.get('last_command') in ['highprice', 'lowprice']:
+        prereply_str = await get_prereply_str(states)
+        await message.answer(prereply_str)
+
+        reply_str = await low_high_price_answer(states, config)
+        await message.answer(reply_str)
+
+        await message.answer(
+            "😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: <b>/help</b>",
+            parse_mode='html'
+        )
+    else:
+        await UsersStates.cities.set()
+        await message.answer("Введите минимальную цену за ночь $:")
 
 
 def register_polling(dp: Dispatcher):
