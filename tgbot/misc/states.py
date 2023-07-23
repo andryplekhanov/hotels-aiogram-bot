@@ -27,6 +27,7 @@ class UsersStates(StatesGroup):
     amount_hotels = State()
     amount_photo = State()
     start_date = State()
+    end_date = State()
     amount_nights = State()
     start_price = State()
     end_price = State()
