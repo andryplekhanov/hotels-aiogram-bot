@@ -1,6 +1,5 @@
 import json
 import logging
-
 from typing import Union, List
 
 from tgbot.config import Config
@@ -84,7 +83,6 @@ async def process_hotels_info(hotels_info_list: List[dict], states: dict) -> dic
     hotels_info_dict = dict()
     for hotel in hotels_info_list:
         hotel_id = hotel.get('id', None)
-        print(hotel_id)
         if not hotel_id:
             continue
         hotel_name = hotel.get('name', 'Нет названия')

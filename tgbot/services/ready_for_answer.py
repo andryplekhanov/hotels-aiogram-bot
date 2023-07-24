@@ -1,13 +1,16 @@
 import logging
 
+from aiogram.dispatcher import FSMContext
 from tgbot.config import Config
+from tgbot.keyboards.inline import show_prev_next_callback
 from tgbot.services.get_hotels import parse_hotels, get_hotel_info_str
 from aiogram.types import Message
 
 logger = logging.getLogger(__name__)
 
 
-async def get_prereply_str(states: dict) -> str:
+async def get_prereply_str(state: FSMContext) -> str:
+    states = await state.get_data()
     sort_order = 'дешёвых' if states.get('last_command') == 'lowprice' else 'дорогих'
     prereply_str = f"✅ Ок, ищу: <b>топ {states['amount_hotels']}</b> " \
                    f"самых {sort_order} отелей в городе <b>{states['city_name']}</b>\n" \
@@ -19,15 +22,26 @@ async def get_prereply_str(states: dict) -> str:
     return prereply_str
 
 
-async def low_high_price_answer(message: Message, states: dict, config: Config) -> None:
+async def low_high_price_answer(message: Message, config: Config, state: FSMContext) -> None:
     logger.info("Start 'low_high_price_answer'")
+    states = await state.get_data()
     hotels = await parse_hotels(states, config)
 
     if hotels:
         logger.info("got hotels")
+        h_info_list = []
         for h_id, h_info in hotels.items():
             result_str = await get_hotel_info_str(h_info, states)
-            await message.answer(result_str, parse_mode='html')
+            h_info_list.append(result_str)
+
+        async with state.proxy() as data:
+            data['result'] = h_info_list
+        async with state.proxy() as data:
+            current_page = 0
+            data['current_page'] = current_page
+            await message.answer(
+                data.get('result')[current_page], reply_markup=show_prev_next_callback()
+            )
     else:
         logger.info("can't get hotels")
         await message.answer("⚠️ Ничего не найдено по вашему запросу. Попробуйте ещё раз.")

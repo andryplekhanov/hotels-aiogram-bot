@@ -19,6 +19,8 @@ class UsersStates(StatesGroup):
         start_price (int): минимальная цена за ночь.
         end_price (int): максимальная цена за ночь.
         end_distance (float): максимальная дистанция до центра города.
+        current_page (int): текущая страница пагинации.
+        result (list): результат поиска отелей.
     """
 
     last_command = State()
@@ -34,3 +36,5 @@ class UsersStates(StatesGroup):
     start_price = State()
     end_price = State()
     end_distance = State()
+    current_page = State()
+    result = State()

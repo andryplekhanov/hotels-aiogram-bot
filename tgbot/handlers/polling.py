@@ -6,9 +6,9 @@ from aiogram.types import Message, CallbackQuery
 from aiogram_calendar import dialog_cal_callback, DialogCalendar
 
 from tgbot.config import Config
-from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels
-from tgbot.misc.states import UsersStates
+from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels, show_prev_next_callback
 from tgbot.misc.factories import for_city, for_photo, for_hotels
+from tgbot.misc.states import UsersStates
 from tgbot.services.get_cities import parse_cities_group
 from tgbot.services.ready_for_answer import low_high_price_answer, get_prereply_str
 
@@ -132,17 +132,41 @@ async def get_amount_adults(message: Message, config: Config, state: FSMContext)
     states = await state.get_data()
 
     if states.get('last_command') in ['highprice', 'lowprice']:
-        prereply_str = await get_prereply_str(states)
+        prereply_str = await get_prereply_str(state)
         await message.answer(prereply_str)
-        await low_high_price_answer(message, states, config)
-
-        await message.answer(
-            "😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: <b>/help</b>",
-            parse_mode='html'
-        )
+        await low_high_price_answer(message, config, state)
+        await message.answer("😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: /help")
     else:
         await UsersStates.start_price.set()
         await message.answer("Введите минимальную цену за ночь $:")
+
+
+async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        current_page = data.get('current_page')
+        if current_page == 0:
+            current_page = len(data.get('result')) - 1
+        else:
+            current_page = current_page - 1
+        data['current_page'] = current_page
+    async with state.proxy() as data:
+        await call.message.edit_text(
+            data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
+        )
+
+
+async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        current_page = data.get('current_page')
+        if current_page == len(data.get('result')) - 1:
+            current_page = 0
+        else:
+            current_page = current_page + 1
+        data['current_page'] = current_page
+    async with state.proxy() as data:
+        await call.message.edit_text(
+            data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
+        )
 
 
 def register_polling(dp: Dispatcher):
@@ -153,3 +177,5 @@ def register_polling(dp: Dispatcher):
     dp.register_callback_query_handler(get_amount_hotels, for_hotels.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_photos, for_photo.filter(), state="*"),
     dp.register_callback_query_handler(process_startdate_calendar, dialog_cal_callback.filter()),
+    dp.register_callback_query_handler(flipping_pages_back, text='back', state="*")
+    dp.register_callback_query_handler(flipping_pages_forward, text='forward', state="*")
