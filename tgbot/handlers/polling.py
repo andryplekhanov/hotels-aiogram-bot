@@ -92,7 +92,7 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     """
     Функция, ожидающая ввод количества ночей.
     Записывает состояние пользователя 'amount_nights' и 'end_date'.
-    ДОПИСАТЬ ТЕКСТ
+    Запрашивает пользователя количество взрослых.
     """
 
     answer = message.text
@@ -107,27 +107,48 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     except ValueError:
         await message.answer("⚠️ Введите число больше нуля")
 
+    await UsersStates.amount_adults.set()
+    await message.answer('Введите количество взрослых гостей на 1 номер:')
+
+
+async def get_amount_adults(message: Message, config: Config, state: FSMContext):
+    """
+    Функция, ожидающая ввод количества взрослых.
+    Записывает состояние пользователя 'amount_adults'.
+    ДОПИСАТЬ ТЕКСТ
+    """
+
+    answer = message.text
+    try:
+        adults_num = int(answer)
+        if adults_num <= 0:
+            raise ValueError
+        else:
+            async with state.proxy() as data:
+                data['amount_adults'] = adults_num
+    except ValueError:
+        await message.answer("⚠️ Введите число больше нуля")
+
     states = await state.get_data()
 
     if states.get('last_command') in ['highprice', 'lowprice']:
         prereply_str = await get_prereply_str(states)
         await message.answer(prereply_str)
-
-        reply_str = await low_high_price_answer(states, config)
-        await message.answer(reply_str)
+        await low_high_price_answer(message, states, config)
 
         await message.answer(
             "😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: <b>/help</b>",
             parse_mode='html'
         )
     else:
-        await UsersStates.cities.set()
+        await UsersStates.start_price.set()
         await message.answer("Введите минимальную цену за ночь $:")
 
 
 def register_polling(dp: Dispatcher):
     dp.register_message_handler(get_cities_group, state=UsersStates.cities),
     dp.register_message_handler(get_amount_nights, state=UsersStates.amount_nights),
+    dp.register_message_handler(get_amount_adults, state=UsersStates.amount_adults),
     dp.register_callback_query_handler(clarify_city, for_city.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_hotels, for_hotels.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_photos, for_photo.filter(), state="*"),
