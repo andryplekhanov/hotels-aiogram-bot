@@ -15,6 +15,7 @@ class UsersStates(StatesGroup):
         amount_photo (int): количество фото.
         start_date (datetime.date): дата заезда в отель.
         amount_nights (int): количество ночей.
+        amount_adults (int): количество взрослых.
         start_price (int): минимальная цена за ночь.
         end_price (int): максимальная цена за ночь.
         end_distance (float): максимальная дистанция до центра города.
@@ -29,6 +30,7 @@ class UsersStates(StatesGroup):
     start_date = State()
     end_date = State()
     amount_nights = State()
+    amount_adults = State()
     start_price = State()
     end_price = State()
     end_distance = State()
