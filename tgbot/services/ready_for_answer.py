@@ -12,13 +12,24 @@ logger = logging.getLogger(__name__)
 async def get_prereply_str(state: FSMContext) -> str:
     states = await state.get_data()
     sort_order = 'дешёвых' if states.get('last_command') == 'lowprice' else 'дорогих'
-    prereply_str = f"✅ Ок, ищу: <b>топ {states['amount_hotels']}</b> " \
-                   f"самых {sort_order} отелей в городе <b>{states['city_name']}</b>\n" \
-                   f"{f'Нужно загрузить фото' if states['amount_photo'] else f'Фото не нужны'}" \
-                   f" — <b>{states['amount_photo']}</b> штук\n" \
-                   f"Количество гостей: <b>{states['amount_adults']} взрослых</b>\n" \
-                   f"Длительность поездки: <b>{states['amount_nights']} ноч.</b> " \
-                   f"(с {states['start_date'].strftime('%d.%m.%Y')} по {states['end_date'].strftime('%d.%m.%Y')})."
+
+    if states.get('last_command') in ['highprice', 'lowprice']:
+        prereply_str = f"✅ Ок, ищу: <b>топ {states['amount_hotels']}</b> " \
+                       f"самых {sort_order} отелей в городе <b>{states['city_name']}</b>\n" \
+                       f"{f'Нужно загрузить фото' if states['amount_photo'] else f'Фото не нужны'}" \
+                       f" — <b>{states['amount_photo']}</b> штук\n" \
+                       f"Длительность поездки: <b>{states['amount_nights']} ноч.</b> " \
+                       f"(с {states['start_date'].strftime('%d.%m.%Y')} по {states['end_date'].strftime('%d.%m.%Y')})."
+    else:
+        prereply_str = f"✅ Ок, ищем: <b>топ {states['amount_hotels']}</b> отелей в городе " \
+                       f"<b>{states['city_name']}</b>\n" \
+                       f"В ценовом диапазоне <b>от {states['start_price']}$ до {states['end_price']}$</b>\n" \
+                       f"Максимальная удаленность от центра: <b>{states['end_distance']} Км</b>\n" \
+                       f"{f'Нужно загрузить фото' if states['amount_photo'] else f'Фото не нужны'}" \
+                       f" — <b>{states['amount_photo']}</b> штук\n" \
+                       f"Количество гостей: <b>{states['amount_adults']} взрослых</b>\n" \
+                       f"Длительность поездки: <b>{states['amount_nights']} ноч.</b> " \
+                       f"(с {states['start_date'].strftime('%d.%m.%Y')} по {states['end_date'].strftime('%d.%m.%Y')})."
     return prereply_str
 
 
