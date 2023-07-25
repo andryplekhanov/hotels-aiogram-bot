@@ -45,15 +45,17 @@ amount_hotels = InlineKeyboardMarkup(
 )
 
 
-def show_prev_next_callback() -> InlineKeyboardMarkup:
+def show_prev_next_callback(current_page: int) -> InlineKeyboardMarkup:
     """
     Клавиатура с кнопками "Вперёд" и "Назад".
     :return: клавиатура InlineKeyboardMarkup.
     """
 
+    current_page = str(current_page + 1)
     keyboard = InlineKeyboardMarkup(row_width=2, inline_keyboard=[
         [
             InlineKeyboardButton(text=f'<<<', callback_data='back'),
+            InlineKeyboardButton(text=f'{current_page}', callback_data='current_page'),
             InlineKeyboardButton(text=f'>>>', callback_data='forward')
         ]
     ])

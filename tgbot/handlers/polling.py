@@ -220,7 +220,7 @@ async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
 
         async with state.proxy() as data:
             await call.message.edit_text(
-                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
+                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback(data.get('current_page'))
             )
     except Exception:
         pass
@@ -238,7 +238,7 @@ async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
 
         async with state.proxy() as data:
             await call.message.edit_text(
-                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
+                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback(data.get('current_page'))
             )
     except Exception:
         pass
