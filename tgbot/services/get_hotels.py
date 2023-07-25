@@ -18,9 +18,16 @@ async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
 
     sort = 'PRICE_LOW_TO_HIGH'
     results_size = int(states.get('amount_hotels'))
+    amount_adults = 1
+    start_price, end_price = '', ''
 
     if states.get('last_command') == 'highprice':
         results_size = 1000
+    elif states.get('last_command') == 'bestdeal':
+        amount_adults = int(states.get('amount_adults'))
+        sort = 'DISTANCE'
+        start_price = int(states.get('start_price'))
+        end_price = int(states.get('end_price'))
 
     url = config.misc.url_list
     payload = {
@@ -30,23 +37,27 @@ async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
         "siteId": 300000001,
         "destination": {"regionId": states.get('city_id')},
         "checkInDate": {
-            "day": int(states.get('start_date').strftime("%d")),
-            "month": int(states.get('start_date').strftime("%m")),
-            "year": int(states.get('start_date').strftime("%Y"))
+            "day": states.get('start_date').day,
+            "month": states.get('start_date').month,
+            "year": states.get('start_date').year
         },
         "checkOutDate": {
-            "day": int(states.get('end_date').strftime("%d")),
-            "month": int(states.get('end_date').strftime("%m")),
-            "year": int(states.get('end_date').strftime("%Y"))
+            "day": states.get('end_date').day,
+            "month": states.get('end_date').month,
+            "year": states.get('end_date').year
         },
         "rooms": [
             {
-                "adults": states.get('amount_adults')
+                "adults": amount_adults
             }
         ],
         "resultsStartingIndex": 0,
         "resultsSize": results_size,
-        "sort": sort
+        "sort": sort,
+        "filters": {"price": {
+            "max": end_price,
+            "min": start_price
+        }}
     }
 
     headers = {
