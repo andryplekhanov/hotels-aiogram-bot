@@ -2,6 +2,8 @@ import json
 import logging
 from typing import Union, List
 
+from aiogram.dispatcher import FSMContext
+
 from tgbot.config import Config
 from tgbot.services.api_requests import request_to_api
 
@@ -115,11 +117,12 @@ async def process_hotels_info(hotels_info_list: List[dict], states: dict) -> dic
     return hotels_info_dict
 
 
-async def get_hotel_info_str(hotel_data: dict, states: dict) -> str:
+async def get_hotel_info_str(hotel_data: dict, state: FSMContext) -> str:
     """
     Функция преобразует данные по отелю из словаря в строку с html.
     Используется для вывода информации через сообщение.
     """
+    states = await state.get_data()
 
     result = f"<b>🏩 Отель:</b> {hotel_data['name']}\n" \
              f"<b>📍 Район:</b> {hotel_data['neighbourhood']}\n" \

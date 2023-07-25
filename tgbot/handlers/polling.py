@@ -114,6 +114,7 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
         prereply_str = await get_prereply_str(state)
         await message.answer(prereply_str)
         await print_answer(message, config, state)
+        await message.answer(f"Введите ещё какую-нибудь команду!\nНапример: <b>/help</b>", parse_mode="html")
     else:
         await UsersStates.amount_adults.set()
         await message.answer("Введите количество взрослых гостей на 1 номер:")
@@ -203,34 +204,44 @@ async def get_end_distance(message: Message, config: Config, state: FSMContext):
     prereply_str = await get_prereply_str(state)
     await message.answer(prereply_str)
     await print_answer(message, config, state)
+    await message.answer(f"Введите ещё какую-нибудь команду!\nНапример: <b>/help</b>", parse_mode="html")
 
 
 async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
-    async with state.proxy() as data:
-        current_page = data.get('current_page')
-        if current_page == 0:
-            current_page = len(data.get('result')) - 1
-        else:
-            current_page = current_page - 1
-        data['current_page'] = current_page
-    async with state.proxy() as data:
-        await call.message.edit_text(
-            data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
-        )
+    try:
+        async with state.proxy() as data:
+            current_page = data.get('current_page')
+
+            if current_page == 0:
+                current_page = len(data.get('result')) - 1
+            else:
+                current_page = current_page - 1
+            data['current_page'] = current_page
+
+        async with state.proxy() as data:
+            await call.message.edit_text(
+                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
+            )
+    except Exception:
+        pass
 
 
 async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
-    async with state.proxy() as data:
-        current_page = data.get('current_page')
-        if current_page == len(data.get('result')) - 1:
-            current_page = 0
-        else:
-            current_page = current_page + 1
-        data['current_page'] = current_page
-    async with state.proxy() as data:
-        await call.message.edit_text(
-            data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
-        )
+    try:
+        async with state.proxy() as data:
+            current_page = data.get('current_page')
+            if current_page == len(data.get('result')) - 1:
+                current_page = 0
+            else:
+                current_page = current_page + 1
+            data['current_page'] = current_page
+
+        async with state.proxy() as data:
+            await call.message.edit_text(
+                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback()
+            )
+    except Exception:
+        pass
 
 
 def register_polling(dp: Dispatcher):
