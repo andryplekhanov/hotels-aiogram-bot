@@ -19,19 +19,6 @@ def print_cities(cities_list: List[Tuple]) -> InlineKeyboardMarkup:
     return keyboard
 
 
-# Клавиатура с выбором количества фото
-amount_photo = InlineKeyboardMarkup(
-    row_width=5, inline_keyboard=[
-        [InlineKeyboardButton(text='Не загружать фото', callback_data=for_photo.new(amount=0))],
-        [
-            InlineKeyboardButton(text=str(num), callback_data=for_photo.new(amount=num)) for num in range(1, 6)
-        ],
-        [
-            InlineKeyboardButton(text=str(num), callback_data=for_photo.new(amount=num)) for num in range(6, 11)
-        ],
-    ]
-)
-
 # Клавиатура с выбором количества отелей
 amount_hotels = InlineKeyboardMarkup(
     row_width=5, inline_keyboard=[
@@ -45,7 +32,7 @@ amount_hotels = InlineKeyboardMarkup(
 )
 
 
-def show_prev_next_callback(current_page: int) -> InlineKeyboardMarkup:
+def show_prev_next_callback(current_page: int, hotel_id: str) -> InlineKeyboardMarkup:
     """
     Клавиатура с кнопками "Вперёд" и "Назад".
     :return: клавиатура InlineKeyboardMarkup.
@@ -53,6 +40,9 @@ def show_prev_next_callback(current_page: int) -> InlineKeyboardMarkup:
 
     current_page = str(current_page + 1)
     keyboard = InlineKeyboardMarkup(row_width=2, inline_keyboard=[
+        [
+            InlineKeyboardButton(text=f'Загрузить фото отеля', callback_data=for_photo.new(hotel_id=hotel_id))
+        ],
         [
             InlineKeyboardButton(text=f'<<<', callback_data='back'),
             InlineKeyboardButton(text=f'{current_page}', callback_data='current_page'),

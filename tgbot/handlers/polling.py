@@ -6,8 +6,8 @@ from aiogram.types import Message, CallbackQuery
 from aiogram_calendar import dialog_cal_callback, DialogCalendar
 
 from tgbot.config import Config
-from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels, show_prev_next_callback
-from tgbot.misc.factories import for_city, for_photo, for_hotels
+from tgbot.keyboards.inline import print_cities, amount_hotels
+from tgbot.misc.factories import for_city, for_hotels
 from tgbot.misc.states import UsersStates
 from tgbot.services.get_cities import parse_cities_group
 from tgbot.services.ready_for_answer import print_answer, get_prereply_str
@@ -54,20 +54,6 @@ async def get_amount_hotels(call: CallbackQuery, callback_data: dict, state: FSM
     hotels_number = callback_data.get('amount')
     async with state.proxy() as data:
         data['amount_hotels'] = hotels_number
-    await call.message.answer('Желаете загрузить фото отелей?', reply_markup=amount_photo)
-
-
-async def get_amount_photos(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
-    """
-    Функция, ожидающая ввод количества фотографий.
-    Записывает состояние пользователя 'amount_photo'.
-    Показывает клавиатуру с выбором даты заезда.
-    """
-
-    await call.message.edit_reply_markup(reply_markup=None)
-    amount_photos = callback_data.get('amount')
-    async with state.proxy() as data:
-        data['amount_photo'] = amount_photos
     await state.reset_state(with_data=False)
     await call.message.answer('Введите дату заезда', reply_markup=await DialogCalendar().start_calendar())
 
@@ -207,43 +193,6 @@ async def get_end_distance(message: Message, config: Config, state: FSMContext):
     await message.answer(f"Введите ещё какую-нибудь команду!\nНапример: <b>/help</b>", parse_mode="html")
 
 
-async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
-    try:
-        async with state.proxy() as data:
-            current_page = data.get('current_page')
-
-            if current_page == 0:
-                current_page = len(data.get('result')) - 1
-            else:
-                current_page = current_page - 1
-            data['current_page'] = current_page
-
-        async with state.proxy() as data:
-            await call.message.edit_text(
-                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback(data.get('current_page'))
-            )
-    except Exception:
-        pass
-
-
-async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
-    try:
-        async with state.proxy() as data:
-            current_page = data.get('current_page')
-            if current_page == len(data.get('result')) - 1:
-                current_page = 0
-            else:
-                current_page = current_page + 1
-            data['current_page'] = current_page
-
-        async with state.proxy() as data:
-            await call.message.edit_text(
-                data.get('result')[data.get('current_page')], reply_markup=show_prev_next_callback(data.get('current_page'))
-            )
-    except Exception:
-        pass
-
-
 def register_polling(dp: Dispatcher):
     dp.register_message_handler(get_cities_group, state=UsersStates.cities),
     dp.register_message_handler(get_amount_nights, state=UsersStates.amount_nights),
@@ -253,7 +202,4 @@ def register_polling(dp: Dispatcher):
     dp.register_message_handler(get_end_distance, state=UsersStates.end_distance),
     dp.register_callback_query_handler(clarify_city, for_city.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_hotels, for_hotels.filter(), state="*"),
-    dp.register_callback_query_handler(get_amount_photos, for_photo.filter(), state="*"),
     dp.register_callback_query_handler(process_startdate_calendar, dialog_cal_callback.filter()),
-    dp.register_callback_query_handler(flipping_pages_back, text='back', state="*")
-    dp.register_callback_query_handler(flipping_pages_forward, text='forward', state="*")

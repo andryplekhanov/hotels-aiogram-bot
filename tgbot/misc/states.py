@@ -12,7 +12,6 @@ class UsersStates(StatesGroup):
         city_id (str): id города, в котором ищем отели.
         cities (Dict): подходящие по названию города, из которых пользователь выбирает нужный ему.
         amount_hotels (int): количество отелей.
-        amount_photo (int): количество фото.
         start_date (datetime.date): дата заезда в отель.
         amount_nights (int): количество ночей.
         amount_adults (int): количество взрослых.
@@ -28,7 +27,6 @@ class UsersStates(StatesGroup):
     city_id = State()
     cities = State()
     amount_hotels = State()
-    amount_photo = State()
     start_date = State()
     end_date = State()
     amount_nights = State()

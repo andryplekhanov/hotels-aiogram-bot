@@ -17,8 +17,6 @@ async def get_prereply_str(state: FSMContext) -> str:
     if states.get('last_command') in ['highprice', 'lowprice']:
         prereply_str = f"✅ Ок, ищу: <b>топ {states['amount_hotels']}</b> " \
                        f"самых {sort_order} отелей в городе <b>{states['city_name']}</b>\n" \
-                       f"{f'Нужно загрузить фото' if int(states['amount_photo']) > 0 else f'Фото не нужны'}" \
-                       f" — <b>{states['amount_photo']}</b> штук\n" \
                        f"Длительность поездки: <b>{states['amount_nights']} ноч.</b> " \
                        f"(с {states['start_date'].strftime('%d.%m.%Y')} по {states['end_date'].strftime('%d.%m.%Y')})."
     else:
@@ -26,8 +24,6 @@ async def get_prereply_str(state: FSMContext) -> str:
                        f"<b>{states['city_name']}</b>\n" \
                        f"В ценовом диапазоне <b>от {states['start_price']}$ до {states['end_price']}$</b>\n" \
                        f"Максимальная удаленность от центра: <b>{states['end_distance']} Км</b>\n" \
-                       f"{f'Нужно загрузить фото' if int(states['amount_photo']) > 0 else f'Фото не нужны'}" \
-                       f" — <b>{states['amount_photo']}</b> штук\n" \
                        f"Количество гостей: <b>{states['amount_adults']} взрослых</b>\n" \
                        f"Длительность поездки: <b>{states['amount_nights']} ноч.</b> " \
                        f"(с {states['start_date'].strftime('%d.%m.%Y')} по {states['end_date'].strftime('%d.%m.%Y')})."
@@ -41,10 +37,7 @@ async def print_answer(message: Message, config: Config, state: FSMContext) -> N
 
     if hotels:
         logger.info("got hotels")
-        if int(states.get('amount_photo')) == 0:
-            await print_nophoto_answer(message, state, hotels)
-        else:
-            await print_photo_answer(message, state, hotels)
+        await print_nophoto_answer(message, state, hotels)
     else:
         logger.info("can't get hotels")
         await message.answer("⚠️ Ничего не найдено по вашему запросу. Попробуйте ещё раз.")
@@ -54,23 +47,13 @@ async def print_nophoto_answer(message: Message, state: FSMContext, hotels: dict
     h_info_list = []
     for h_id, h_info in hotels.items():
         result_str = await get_hotel_info_str(h_info, state)
-        h_info_list.append(result_str)
+        h_info_list.append((h_id, result_str))
 
     async with state.proxy() as data:
         data['result'] = h_info_list
         current_page = 0
         data['current_page'] = current_page
         await message.answer(
-            data.get('result')[current_page], reply_markup=show_prev_next_callback(data.get('current_page'))
+            data.get('result')[current_page][1],
+            reply_markup=show_prev_next_callback(data.get('current_page'), data.get('result')[current_page][0])
         )
-
-
-async def print_photo_answer(message: Message, state: FSMContext, hotels: dict) -> None:
-    h_info_list = []
-    for h_id, h_info in hotels.items():
-        result_str = await get_hotel_info_str(h_info, state)
-        h_info_list.append(result_str)
-        await message.answer(result_str)
-
-    async with state.proxy() as data:
-        data['result'] = h_info_list
