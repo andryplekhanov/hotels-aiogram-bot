@@ -19,13 +19,10 @@ async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
     logger.info("Start hotel parsing")
 
     sort = 'PRICE_LOW_TO_HIGH'
-    results_size = int(states.get('amount_hotels'))
     amount_adults = 1
     start_price, end_price = '', ''
 
-    if states.get('last_command') == 'highprice':
-        results_size = 1000
-    elif states.get('last_command') == 'bestdeal':
+    if states.get('last_command') == 'bestdeal':
         amount_adults = int(states.get('amount_adults'))
         sort = 'DISTANCE'
         start_price = int(states.get('start_price'))
@@ -54,7 +51,7 @@ async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
             }
         ],
         "resultsStartingIndex": 0,
-        "resultsSize": results_size,
+        "resultsSize": 500,
         "sort": sort,
         "filters": {"price": {
             "max": end_price,
@@ -91,17 +88,25 @@ async def process_hotels_info(hotels_info_list: List[dict], states: dict) -> dic
     logger.info("Start hotels_info processing")
 
     if states.get('last_command') == 'highprice':  # Если была команда 'highprice', то список отелей берем с конца
-        hotels_info_list = hotels_info_list[::-1][:int(states.get('amount_hotels'))]
+        hotels_info_list = hotels_info_list[::-1]
 
     hotels_info_dict = dict()
     for hotel in hotels_info_list:
+        if len(hotels_info_dict) >= int(states.get('amount_hotels')):  # Если набрали нужное количество отелей - выходим
+            break
+
         hotel_id = hotel.get('id', None)
         if not hotel_id:
             continue
+
+        distance_city_center = hotel.get('destinationInfo', {}).get('distanceFromDestination', {}).get('value', 0)
+        if states.get('last_command') == 'bestdeal':
+            if distance_city_center > int(states.get('end_distance')):
+                continue
+
         hotel_name = hotel.get('name', 'Нет названия')
         price_per_night = hotel.get('price', {}).get('lead', {}).get('amount', 0)
         total_price = round(price_per_night * states.get('amount_nights'), 2)
-        distance_city_center = hotel.get('destinationInfo', {}).get('distanceFromDestination', {}).get('value', 0)
         score = hotel.get('reviews', {}).get('score', 0)
         neighbourhood = hotel.get('neighborhood')
         neighbourhood = neighbourhood.get('name', 'Нет данных') if neighbourhood is not None else 'Нет данных'
