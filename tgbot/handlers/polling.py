@@ -10,7 +10,7 @@ from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels, sh
 from tgbot.misc.factories import for_city, for_photo, for_hotels
 from tgbot.misc.states import UsersStates
 from tgbot.services.get_cities import parse_cities_group
-from tgbot.services.ready_for_answer import low_high_price_answer, get_prereply_str
+from tgbot.services.ready_for_answer import low_high_price_answer, get_prereply_str, bestdeal_answer
 
 
 async def get_cities_group(message: Message, config: Config, state: FSMContext):
@@ -92,7 +92,8 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     """
     Функция, ожидающая ввод количества ночей.
     Записывает состояние пользователя 'amount_nights' и 'end_date'.
-    Запрашивает пользователя количество взрослых.
+    Если была команда 'highprice' или 'lowprice', завершает опрос и вызывает функцию подготовки ответа.
+    Иначе, продолжает опрос и запрашивает количество гостей.
     """
 
     answer = message.text
@@ -107,15 +108,21 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     except ValueError:
         await message.answer("⚠️ Введите число больше нуля")
 
-    await UsersStates.amount_adults.set()
-    await message.answer('Введите количество взрослых гостей на 1 номер:')
+    states = await state.get_data()
+
+    if states.get('last_command') in ['highprice', 'lowprice']:
+        prereply_str = await get_prereply_str(state)
+        await message.answer(prereply_str)
+        await low_high_price_answer(message, config, state)
+    else:
+        await UsersStates.amount_adults.set()
+        await message.answer("Введите количество взрослых гостей на 1 номер:")
 
 
 async def get_amount_adults(message: Message, config: Config, state: FSMContext):
     """
     Функция, ожидающая ввод количества взрослых.
-    Записывает состояние пользователя 'amount_adults'.
-    ДОПИСАТЬ ТЕКСТ
+    Записывает состояние пользователя 'amount_adults' и предлагает ввести минимальную цену за ночь.
     """
 
     answer = message.text
@@ -129,16 +136,73 @@ async def get_amount_adults(message: Message, config: Config, state: FSMContext)
     except ValueError:
         await message.answer("⚠️ Введите число больше нуля")
 
-    states = await state.get_data()
+    await UsersStates.start_price.set()
+    await message.answer('Введите минимальную цену за ночь $:')
 
-    if states.get('last_command') in ['highprice', 'lowprice']:
-        prereply_str = await get_prereply_str(state)
-        await message.answer(prereply_str)
-        await low_high_price_answer(message, config, state)
-        await message.answer("😉👌 Вот как-то так.\nМожете ввести ещё какую-нибудь команду!\nНапример: /help")
-    else:
-        await UsersStates.start_price.set()
-        await message.answer("Введите минимальную цену за ночь $:")
+
+async def get_start_price(message: Message, config: Config, state: FSMContext):
+    """
+    Функция, ожидающая ввод количества $.
+    Записывает состояние пользователя 'start_price' и предлагает ввести максимальную цену за ночь.
+    """
+
+    answer = message.text
+    try:
+        price_num = int(answer)
+        if price_num <= 0:
+            raise ValueError
+        else:
+            async with state.proxy() as data:
+                data['start_price'] = price_num
+    except ValueError:
+        await message.answer("⚠️ Введите число больше нуля")
+
+    await UsersStates.end_price.set()
+    await message.answer("Введите максимальную цену за ночь $:")
+
+
+async def get_end_price(message: Message, config: Config, state: FSMContext):
+    """
+    Функция, ожидающая ввод количества $.
+    Записывает состояние пользователя 'end_price' и предлагает ввести максимальное расстояние до цента.
+    """
+
+    answer = message.text
+    try:
+        price_num = int(answer)
+        if price_num <= 0:
+            raise ValueError
+        else:
+            async with state.proxy() as data:
+                data['end_price'] = price_num
+    except ValueError:
+        await message.answer("⚠️ Введите число больше нуля")
+
+    await UsersStates.end_distance.set()
+    await message.answer("Введите максимальное расстояние до цента в км:")
+
+
+async def get_end_distance(message: Message, config: Config, state: FSMContext):
+    """
+    Функция, ожидающая ввод максимального расстояния до центра.
+    Записывает состояние пользователя 'end_distance', завершает опрос и
+    вызывает функцию для подготовки ответа на запрос пользователя.
+    """
+
+    answer = message.text
+    try:
+        distance_num = int(answer)
+        if distance_num <= 0:
+            raise ValueError
+        else:
+            async with state.proxy() as data:
+                data['end_distance'] = distance_num
+    except ValueError:
+        await message.answer("⚠️ Введите число больше нуля")
+
+    prereply_str = await get_prereply_str(state)
+    await message.answer(prereply_str)
+    await bestdeal_answer(message, config, state)
 
 
 async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
@@ -173,6 +237,9 @@ def register_polling(dp: Dispatcher):
     dp.register_message_handler(get_cities_group, state=UsersStates.cities),
     dp.register_message_handler(get_amount_nights, state=UsersStates.amount_nights),
     dp.register_message_handler(get_amount_adults, state=UsersStates.amount_adults),
+    dp.register_message_handler(get_start_price, state=UsersStates.start_price),
+    dp.register_message_handler(get_end_price, state=UsersStates.end_price),
+    dp.register_message_handler(get_end_distance, state=UsersStates.end_distance),
     dp.register_callback_query_handler(clarify_city, for_city.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_hotels, for_hotels.filter(), state="*"),
     dp.register_callback_query_handler(get_amount_photos, for_photo.filter(), state="*"),
