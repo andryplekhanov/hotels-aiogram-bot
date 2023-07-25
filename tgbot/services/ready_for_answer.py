@@ -4,6 +4,7 @@ from aiogram.dispatcher import FSMContext
 from tgbot.config import Config
 from tgbot.keyboards.inline import show_prev_next_callback
 from tgbot.services.get_hotels import parse_hotels, get_hotel_info_str
+from typing import Union
 from aiogram.types import Message
 
 logger = logging.getLogger(__name__)
@@ -33,8 +34,8 @@ async def get_prereply_str(state: FSMContext) -> str:
     return prereply_str
 
 
-async def low_high_price_answer(message: Message, config: Config, state: FSMContext) -> None:
-    logger.info("Start 'low_high_price_answer'")
+async def print_answer(message: Message, config: Config, state: FSMContext) -> None:
+    logger.info("Start 'print_answer'")
     states = await state.get_data()
     hotels = await parse_hotels(states, config)
 
@@ -47,7 +48,6 @@ async def low_high_price_answer(message: Message, config: Config, state: FSMCont
 
         async with state.proxy() as data:
             data['result'] = h_info_list
-        async with state.proxy() as data:
             current_page = 0
             data['current_page'] = current_page
             await message.answer(
