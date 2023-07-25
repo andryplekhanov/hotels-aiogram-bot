@@ -16,7 +16,7 @@ async def get_prereply_str(state: FSMContext) -> str:
     if states.get('last_command') in ['highprice', 'lowprice']:
         prereply_str = f"✅ Ок, ищу: <b>топ {states['amount_hotels']}</b> " \
                        f"самых {sort_order} отелей в городе <b>{states['city_name']}</b>\n" \
-                       f"{f'Нужно загрузить фото' if states['amount_photo'] else f'Фото не нужны'}" \
+                       f"{f'Нужно загрузить фото' if states['amount_photo'] > 0 else f'Фото не нужны'}" \
                        f" — <b>{states['amount_photo']}</b> штук\n" \
                        f"Длительность поездки: <b>{states['amount_nights']} ноч.</b> " \
                        f"(с {states['start_date'].strftime('%d.%m.%Y')} по {states['end_date'].strftime('%d.%m.%Y')})."
