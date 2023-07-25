@@ -1,26 +1,17 @@
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.markdown import hcode
+
+from tgbot.services.default_commands import get_default_commands
 
 
 async def bot_echo(message: types.Message):
-    text = [
-        "Эхо без состояния.",
-        "Сообщение:",
-        message.text
-    ]
-
-    await message.answer('\n'.join(text))
+    commands = await get_default_commands()
+    await message.answer(f"Я реагирую на следующие команды:\n\n{commands}")
 
 
 async def bot_echo_all(message: types.Message, state: FSMContext):
-    state_name = await state.get_state()
-    text = [
-        f'Эхо в состоянии {hcode(state_name)}',
-        'Содержание сообщения:',
-        hcode(message.text)
-    ]
-    await message.answer('\n'.join(text))
+    commands = await get_default_commands()
+    await message.answer(f"Я реагирую на следующие команды:\n\n{commands}")
 
 
 def register_echo(dp: Dispatcher):
