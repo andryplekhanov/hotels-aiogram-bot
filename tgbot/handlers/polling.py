@@ -10,7 +10,7 @@ from tgbot.keyboards.inline import print_cities, amount_photo, amount_hotels, sh
 from tgbot.misc.factories import for_city, for_photo, for_hotels
 from tgbot.misc.states import UsersStates
 from tgbot.services.get_cities import parse_cities_group
-from tgbot.services.ready_for_answer import low_high_price_answer, get_prereply_str, bestdeal_answer
+from tgbot.services.ready_for_answer import print_answer, get_prereply_str
 
 
 async def get_cities_group(message: Message, config: Config, state: FSMContext):
@@ -113,7 +113,7 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     if states.get('last_command') in ['highprice', 'lowprice']:
         prereply_str = await get_prereply_str(state)
         await message.answer(prereply_str)
-        await low_high_price_answer(message, config, state)
+        await print_answer(message, config, state)
     else:
         await UsersStates.amount_adults.set()
         await message.answer("Введите количество взрослых гостей на 1 номер:")
@@ -202,7 +202,7 @@ async def get_end_distance(message: Message, config: Config, state: FSMContext):
 
     prereply_str = await get_prereply_str(state)
     await message.answer(prereply_str)
-    await bestdeal_answer(message, config, state)
+    await print_answer(message, config, state)
 
 
 async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
