@@ -36,10 +36,10 @@ async def print_answer(message: Message, config: Config, state: FSMContext) -> N
     hotels = await parse_hotels(states, config)
 
     if hotels:
-        logger.info("got hotels")
+        logger.info("SUCCESS: got hotels")
         await print_nophoto_answer(message, state, hotels)
     else:
-        logger.info("can't get hotels")
+        logger.info("FAIL: can't get hotels")
         await message.answer("⚠️ Ничего не найдено по вашему запросу. Попробуйте ещё раз.")
 
 
