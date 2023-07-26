@@ -26,10 +26,25 @@ class Request(Base):
     command = Column(String, nullable=False)
     date = Column(DateTime, default=datetime.now, nullable=False)
     city_name = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f'{self.date}: {self.command} - {self.city_name}'
+
+
+class Result(Base):
+    __tablename__ = 'Result'
+
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    request_id = Column(Integer, ForeignKey('request.id', ondelete='CASCADE'), nullable=False, index=True)
+    hotel_id = Column(String, nullable=False)
+    hotel_name = Column(String, nullable=False)
+    price_per_night = Column(String, nullable=False)
+    total_price = Column(String, nullable=False)
+    distance_city_center = Column(String, nullable=False)
+    hotel_neighbourhood = Column(String, nullable=False)
     amount_nights = Column(Integer, nullable=False)
     amount_adults = Column(Integer, nullable=True)
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=False)
-    start_price = Column(Integer, nullable=True)
-    end_price = Column(Integer, nullable=True)
-    end_distance = Column(Integer, nullable=True)
+    score = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f'{self.hotel_name}'
