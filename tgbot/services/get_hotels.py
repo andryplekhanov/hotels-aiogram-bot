@@ -128,11 +128,12 @@ async def get_hotel_info_str(hotel_data: dict, state: FSMContext) -> str:
     Используется для вывода информации через сообщение.
     """
     states = await state.get_data()
+    adult = states.get('amount_adults') if states.get('amount_adults') else 1
 
     result = f"<b>🏩 Отель:</b> {hotel_data['name']}\n" \
              f"<b>📍 Район:</b> {hotel_data['neighbourhood']}\n" \
              f"<b>🚕 Расстояние до центра:</b> {hotel_data['distance_city_center']} Км\n" \
-             f"<b>💰 Цена за 1 ночь: </b> от {round(hotel_data['price_per_night'], 2)}$\n" \
+             f"<b>💰 Цена за 1 ночь на {adult} взр.: </b> от {round(hotel_data['price_per_night'], 2)}$\n" \
              f"<b>💰💰 Примерная стоимость за {states.get('amount_nights')} ноч.:</b> {hotel_data['total_price']}$\n" \
              f"<b>⭐️ Рейтинг:</b> {hotel_data['score']}"
     return result
