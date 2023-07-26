@@ -46,14 +46,18 @@ async def print_answer(message: Message, config: Config, state: FSMContext) -> N
 async def print_nophoto_answer(message: Message, state: FSMContext, hotels: dict) -> None:
     h_info_list = []
     for h_id, h_info in hotels.items():
+        hotel_name = h_info['name']
         result_str = await get_hotel_info_str(h_info, state)
-        h_info_list.append((h_id, result_str))
+        h_info_list.append((h_id, hotel_name, result_str))
 
     async with state.proxy() as data:
         data['result'] = h_info_list
         current_page = 0
         data['current_page'] = current_page
-        await message.answer(
-            data.get('result')[current_page][1],
-            reply_markup=show_prev_next_callback(data.get('current_page'), data.get('result')[current_page][0])
+        await message.answer(data.get('result')[current_page][2],
+                             reply_markup=show_prev_next_callback(
+                                 current_page=data.get('current_page'),
+                                 hotel_id=data.get('result')[current_page][0],
+                                 hotel_name=data.get('result')[current_page][1]
+                             )
         )

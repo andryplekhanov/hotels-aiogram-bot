@@ -100,7 +100,7 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
         prereply_str = await get_prereply_str(state)
         await message.answer(prereply_str)
         await print_answer(message, config, state)
-        await message.answer(f"Введите ещё какую-нибудь команду!\nНапример: <b>/help</b>", parse_mode="html")
+        await state.reset_state(with_data=False)
     else:
         await UsersStates.amount_adults.set()
         await message.answer("Введите количество взрослых гостей на 1 номер:")
@@ -190,7 +190,7 @@ async def get_end_distance(message: Message, config: Config, state: FSMContext):
     prereply_str = await get_prereply_str(state)
     await message.answer(prereply_str)
     await print_answer(message, config, state)
-    await message.answer(f"Введите ещё какую-нибудь команду!\nНапример: <b>/help</b>", parse_mode="html")
+    await state.reset_state(with_data=False)
 
 
 def register_polling(dp: Dispatcher):

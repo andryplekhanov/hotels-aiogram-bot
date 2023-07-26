@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery
 from tgbot.config import Config
 from tgbot.keyboards.inline import show_prev_next_callback
 from tgbot.misc.factories import for_photo
+from tgbot.services.get_photos import parse_photos
 
 
 async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
@@ -24,9 +25,11 @@ async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
 
         async with state.proxy() as data:
             await call.message.edit_text(
-                data.get('result')[data.get('current_page')][1],
-                reply_markup=show_prev_next_callback(data.get('current_page'),
-                                                     data.get('result')[data.get('current_page')][0])
+                data.get('result')[data.get('current_page')][2],
+                reply_markup=show_prev_next_callback(current_page=data.get('current_page'),
+                                                     hotel_id=data.get('result')[data.get('current_page')][0],
+                                                     hotel_name=data.get('result')[data.get('current_page')][1]
+                                                     )
             )
     except Exception:
         pass
@@ -48,9 +51,11 @@ async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
 
         async with state.proxy() as data:
             await call.message.edit_text(
-                data.get('result')[data.get('current_page')][1],
-                reply_markup=show_prev_next_callback(data.get('current_page'),
-                                                     data.get('result')[data.get('current_page')][0])
+                data.get('result')[data.get('current_page')][2],
+                reply_markup=show_prev_next_callback(current_page=data.get('current_page'),
+                                                     hotel_id=data.get('result')[data.get('current_page')][0],
+                                                     hotel_name=data.get('result')[data.get('current_page')][1]
+                                                     )
             )
     except Exception:
         pass
@@ -63,9 +68,15 @@ async def get_photos(call: CallbackQuery, callback_data: dict, state: FSMContext
     Выводит медиагруппу фото.
     """
 
+    states = await state.get_data()
     hotel_id = callback_data.get('hotel_id')
-    # TODO
-    await call.message.answer(hotel_id)
+    hotel_name = callback_data.get('hotel_name')
+    await call.message.answer(f'Загружаю фото к отелю <b>{hotel_name}</b>', parse_mode='html')
+    photos = await parse_photos(hotel_id, config)
+    if photos:
+        await call.message.answer_media_group(photos)
+    else:
+        await call.message.answer('⚠️ Не удалось загрузить фото!')
 
 
 def register_result(dp: Dispatcher):

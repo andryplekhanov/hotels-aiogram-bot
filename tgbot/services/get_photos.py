@@ -10,7 +10,7 @@ from tgbot.services.api_requests import request_to_api
 logger = logging.getLogger(__name__)
 
 
-async def parse_photos(hotel_id: str, states: dict, config: Config) -> Union[types.MediaGroup, None]:
+async def parse_photos(hotel_id: str, config: Config) -> Union[types.MediaGroup, None]:
     """
     Функция делает запрос в request_to_api и десериализирует результат. Если запрос получен и десериализация прошла -
     возвращает обработанный результат в виде медиагруппы, иначе None.
