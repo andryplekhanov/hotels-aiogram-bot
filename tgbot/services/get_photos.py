@@ -43,7 +43,7 @@ async def parse_photos(hotel_id: str, config: Config) -> Union[types.MediaGroup,
         photos_list = all_info.get('data', None).get('propertyInfo', None).get('propertyGallery', None).get('images', None)
         result = await process_photos(photos_list)
     except Exception as ex:
-        logger.info(f"FAIL: can't deserialize photo: {ex}")
+        logger.error(f"FAIL: can't deserialize photo: {ex}")
         result = None
     return result
 
@@ -64,7 +64,7 @@ async def process_photos(photos_list: List[dict]) -> Union[types.MediaGroup, Non
             photo = photo_info.get('image', {}).get('url', None)
             media.attach_photo(photo)
         except Exception as ex:
-            logger.info("No photo", ex)
+            logger.error("No photo", ex)
             continue
     if media:
         logger.info("SUCCESS: got photo")

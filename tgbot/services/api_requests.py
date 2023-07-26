@@ -25,8 +25,8 @@ async def request_to_api(
         if response.status_code == requests.codes.ok:
             logger.info("request OK")
             return response
-        logger.info("Bad request")
+        logger.error("Bad request")
         return None
-    except Exception:
-        logger.info("Bad request")
+    except Exception as ex:
+        logger.error("Bad request:", ex)
         return None

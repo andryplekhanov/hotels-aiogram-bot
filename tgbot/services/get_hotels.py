@@ -74,7 +74,7 @@ async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
         hotels_info_list = all_info.get('data', None).get('propertySearch', None).get('properties', None)
         result = await process_hotels_info(hotels_info_list, states)
     except Exception as ex:
-        logger.info(f"Can't deserialize: {ex}")
+        logger.error(f"Can't deserialize hotels: {ex}")
         result = None
     return result
 
