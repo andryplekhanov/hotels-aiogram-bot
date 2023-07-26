@@ -9,6 +9,7 @@ from tgbot.config import Config
 from tgbot.keyboards.inline import print_cities, amount_hotels
 from tgbot.misc.factories import for_city, for_hotels
 from tgbot.misc.states import UsersStates
+from tgbot.models.orm import save_search_history
 from tgbot.services.get_cities import parse_cities_group
 from tgbot.services.ready_for_answer import print_answer, get_prereply_str
 
@@ -99,6 +100,7 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     if states.get('last_command') in ['highprice', 'lowprice']:
         prereply_str = await get_prereply_str(state)
         await message.answer(prereply_str)
+        await save_search_history(async_session=message.bot.get('db'), user_id=message.from_user.id, state=state)
         await print_answer(message, config, state)
         await state.reset_state(with_data=False)
     else:
