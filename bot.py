@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from tgbot.config import load_config
 from tgbot.filters.admin import AdminFilter
@@ -17,6 +18,8 @@ from tgbot.handlers.result import register_result
 from tgbot.handlers.start import register_start
 from tgbot.handlers.help import register_help
 from tgbot.middlewares.environment import EnvironmentMiddleware
+from tgbot.models.models import Base
+from tgbot.models.utils import make_connection_string
 from tgbot.services.default_commands import set_default_commands
 
 logger = logging.getLogger(__name__)
@@ -51,11 +54,20 @@ async def main():
     logger.info("Starting bot")
     config = load_config(".env")
 
+    # Creating DB engine for PostgreSQL
+    engine = create_async_engine(make_connection_string(config=config), future=True, echo=False)
+
+    # Creating DB connections pool
+    db_pool = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+    async with engine.begin() as con:
+        await con.run_sync(Base.metadata.create_all)
+
     storage = RedisStorage2() if config.tg_bot.use_redis else MemoryStorage()
     bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
     dp = Dispatcher(bot, storage=storage)
 
     bot['config'] = config
+    bot["db"] = db_pool
 
     register_all_middlewares(dp, config)
     register_all_filters(dp)
