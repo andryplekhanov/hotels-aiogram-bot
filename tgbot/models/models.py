@@ -8,7 +8,7 @@ Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = 'Users'
+    __tablename__ = 'user'
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     connection_date = Column(DateTime, default=datetime.now, nullable=False)
@@ -19,7 +19,7 @@ class User(Base):
 
 
 class Request(Base):
-    __tablename__ = 'Request'
+    __tablename__ = 'request'
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     user_id = Column(BigInteger, ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
@@ -32,7 +32,7 @@ class Request(Base):
 
 
 class Result(Base):
-    __tablename__ = 'Result'
+    __tablename__ = 'result'
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     request_id = Column(Integer, ForeignKey('request.id', ondelete='CASCADE'), nullable=False, index=True)
