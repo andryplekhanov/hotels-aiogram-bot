@@ -1,23 +1,43 @@
-version: '3.3'
+# Подробная статья по подключению postgres https://habr.com/ru/articles/578744/
+
+version: '3.9'
 
 services:
   bot:
-    image: "${BOT_IMAGE_NAME:-tg_bot-image}"
-    container_name: "${BOT_CONTAINER_NAME:-tg_bot-container}"
+    build: .
+    container_name: ${BOT_CONTAINER_NAME}
     stop_signal: SIGINT
-    build:
-      context: .
-    working_dir: "/usr/src/app/${BOT_NAME:-tg_bot}"
     volumes:
-    - .:/usr/src/app/${BOT_NAME:-tg_bot}
-    command: python3 -m bot
+      - ./logs:/app/logs
     restart: always
     env_file:
-      - ".env"
-    networks:
-    - tg_bot
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
 
-
-networks:
-  tg_bot:
-    driver: bridge
+  db:
+    container_name: db_hotels
+    image: postgres:15.0-alpine
+    command:
+      - "postgres"
+      - "-c"
+      - "log_destination=stderr"
+      - "-c"
+      - "logging_collector=on"
+      - "-c"
+      - "log_directory=/var/lib/postgresql/data/pg_log"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "maintenance_work_mem=512MB"
+    env_file:
+      - ./.env
+    volumes:
+      - ./postgres_db/postgres/postgresql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
