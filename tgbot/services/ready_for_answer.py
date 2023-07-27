@@ -5,6 +5,7 @@ from aiogram.types import Message
 
 from tgbot.config import Config
 from tgbot.keyboards.inline import show_prev_next_callback
+from tgbot.models.orm import save_search_history
 from tgbot.services.get_hotels import parse_hotels, get_hotel_info_str
 
 logger = logging.getLogger(__name__)
@@ -37,21 +38,29 @@ async def print_answer(message: Message, config: Config, state: FSMContext) -> N
 
     if hotels:
         logger.info("SUCCESS: got hotels")
-        await print_nophoto_answer(message, state, hotels)
+        h_info_list = []
+        for h_id, h_info in hotels.items():
+            hotel_name = h_info['name']
+            result_str = await get_hotel_info_str(h_info, state)
+            h_info_list.append((h_id, hotel_name, result_str))
+
+        async with state.proxy() as data:
+            data['result'] = h_info_list
+
+        await save_search_history(
+            async_session=message.bot.get('db'),
+            user_id=message.from_user.id,
+            state=state,
+            all_results=h_info_list
+        )
+        await print_nophoto_answer(message, state, h_info_list)
     else:
         logger.error("FAIL: can't get hotels")
         await message.answer("⚠️ Ничего не найдено по вашему запросу. Попробуйте ещё раз.")
 
 
-async def print_nophoto_answer(message: Message, state: FSMContext, hotels: dict) -> None:
-    h_info_list = []
-    for h_id, h_info in hotels.items():
-        hotel_name = h_info['name']
-        result_str = await get_hotel_info_str(h_info, state)
-        h_info_list.append((h_id, hotel_name, result_str))
-
+async def print_nophoto_answer(message: Message, state: FSMContext, h_info_list: list) -> None:
     async with state.proxy() as data:
-        data['result'] = h_info_list
         current_page = 0
         data['current_page'] = current_page
         await message.answer(data.get('result')[current_page][2],

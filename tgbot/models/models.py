@@ -38,13 +38,7 @@ class Result(Base):
     request_id = Column(Integer, ForeignKey('request.id', ondelete='CASCADE'), nullable=False, index=True)
     hotel_id = Column(String, nullable=False)
     hotel_name = Column(String, nullable=False)
-    price_per_night = Column(String, nullable=False)
-    total_price = Column(String, nullable=False)
-    distance_city_center = Column(String, nullable=False)
-    hotel_neighbourhood = Column(String, nullable=False)
-    amount_nights = Column(Integer, nullable=False)
-    amount_adults = Column(Integer, nullable=True)
-    score = Column(String, nullable=False)
+    result_str = Column(String, nullable=False)
 
     def __repr__(self):
         return f'{self.hotel_name}'
