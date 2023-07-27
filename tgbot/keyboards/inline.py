@@ -2,7 +2,7 @@ from typing import Tuple, List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from tgbot.misc.factories import for_city, for_photo, for_hotels
+from tgbot.misc.factories import for_city, for_photo, for_hotels, for_history
 
 
 def print_cities(cities_list: List[Tuple]) -> InlineKeyboardMarkup:
@@ -15,6 +15,20 @@ def print_cities(cities_list: List[Tuple]) -> InlineKeyboardMarkup:
         city_name = data[0][:19]
         keyboard.add(InlineKeyboardButton(text=f'{city_name} ({data[1]})',
                                           callback_data=for_city.new(city_id=data[2], city_name=city_name)
+                                          ))
+    return keyboard
+
+
+def print_history(requests_list: list) -> InlineKeyboardMarkup:
+    """
+    Клавиатура с кнопками - выбор подходящего запроса из истории.
+    """
+
+    keyboard = InlineKeyboardMarkup()
+    for data in requests_list:
+        date = data.date.strftime("%d.%m.%Y")
+        keyboard.add(InlineKeyboardButton(text=f'{date} - {data.command} - {data.city_name}',
+                                          callback_data=for_history.new(history_id=data.id)
                                           ))
     return keyboard
 
