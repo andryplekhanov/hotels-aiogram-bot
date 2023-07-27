@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 async def add_user(async_session, user_id):
     async with async_session() as session:
-        user = await session.execute(select(User).where(User.tg_id == user_id))
+        user = await session.execute(select(User).where(User.id == user_id))
         all_users = user.scalars().all()
 
         if str(user_id) not in list(map(str, all_users)):
-            new_user = User(tg_id=user_id)
+            new_user = User(id=user_id)
             session.add(new_user)
             await session.commit()
             logger.info(f"User '{user_id}' was added to DB")
@@ -23,8 +23,9 @@ async def save_search_history(async_session, user_id, state, all_results):
     states = await state.get_data()
 
     async with async_session() as session:
-        user = await session.execute(select(User).where(User.tg_id == user_id))
+        user = await session.execute(select(User).where(User.id == user_id))
         my_user = user.scalars().first()
+
         new_search_history = Request(
             user_id=my_user.id,
             command=states.get('last_command'),
@@ -48,8 +49,9 @@ async def save_search_history(async_session, user_id, state, all_results):
 
 async def get_history(async_session, user_id):
     async with async_session() as session:
-        requests = await session.execute(select(Request).where(Request.user_tg_id == user_id))
-        logger.info(f"{requests}")
-        all_requests = requests.scalars().all()
-        for req in all_requests:
-            logger.info(f"{req}")
+        try:
+            requests = await session.execute(select(Request).where(Request.user_id == user_id))
+            return requests.scalars().all()
+        except Exception as ex:
+            logger.error(f"FAIL 'get_history': {ex}")
+            return None
