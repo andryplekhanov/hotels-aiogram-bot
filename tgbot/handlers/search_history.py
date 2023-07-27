@@ -15,8 +15,11 @@ async def history(message: Message, state: FSMContext):
 async def show_history(call: CallbackQuery):
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.delete()
-    history = await orm.get_history(call.message.bot.get('db'), call.message.from_user.id)
-    await call.message.answer('show_history')
+    requests = await orm.get_history(call.message.bot.get('db'), call.message.from_user.id)
+    # if requests:
+    #     await call.message.answer(requests)
+    # else:
+    #     await call.message.answer('История пуста')
 
 
 async def clear_history(call: CallbackQuery):

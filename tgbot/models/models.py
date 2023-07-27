@@ -10,19 +10,18 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'user'
 
-    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    id = Column(BigInteger, autoincrement=False, primary_key=True, unique=True, index=True)
     connection_date = Column(DateTime, default=datetime.now, nullable=False)
-    tg_id = Column(BigInteger, nullable=False, unique=True)
 
     def __repr__(self):
-        return f'{self.tg_id}'
+        return f'{self.id}'
 
 
 class Request(Base):
     __tablename__ = 'request'
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    user_tg_id = Column(BigInteger, ForeignKey('user.tg_id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id = Column(BigInteger, ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
     command = Column(String, nullable=False)
     date = Column(DateTime, default=datetime.now, nullable=False)
     city_name = Column(String, nullable=False)
