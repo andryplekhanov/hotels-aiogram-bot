@@ -44,3 +44,12 @@ async def save_search_history(async_session, user_id, state, all_results):
 
         await session.commit()
         logger.info(f"History from '{user_id}' was added to DB")
+
+
+async def get_history(async_session, user_id):
+    async with async_session() as session:
+        requests = await session.execute(select(Request).where(Request.user_tg_id == user_id))
+        logger.info(f"{requests}")
+        all_requests = requests.scalars().all()
+        for req in all_requests:
+            logger.info(f"{req}")

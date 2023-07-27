@@ -22,7 +22,7 @@ class Request(Base):
     __tablename__ = 'request'
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    user_id = Column(BigInteger, ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_tg_id = Column(BigInteger, ForeignKey('user.tg_id', ondelete='CASCADE'), nullable=False, index=True)
     command = Column(String, nullable=False)
     date = Column(DateTime, default=datetime.now, nullable=False)
     city_name = Column(String, nullable=False)
