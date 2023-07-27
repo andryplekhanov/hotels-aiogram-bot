@@ -49,12 +49,9 @@ async def save_search_history(async_session, user_id, state, all_results):
 
 async def get_history(async_session, user_id):
     async with async_session() as session:
-        requests = await session.execute(select(Request).where(Request.user_tg_id == user_id))
-        for hist in requests.scalars().all():
-            logger.info(f"History {hist.user_tg_id}: {hist.city_name}")
-        # try:
-        #     requests = await session.execute(select(Request).where(Request.user_tg_id == user_id))
-        #     return requests.scalars().all()
-        # except Exception as ex:
-        #     logger.error(f"FAIL 'get_history': {ex}")
-        #     return None
+        try:
+            requests = await session.execute(select(Request).where(Request.user_id == user_id))
+            return requests.scalars().all()
+        except Exception as ex:
+            logger.error(f"FAIL 'get_history': {ex}")
+            return None
