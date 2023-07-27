@@ -12,6 +12,7 @@ from tgbot.handlers.admin import register_admin
 from tgbot.handlers.bestdeal import register_bestdeal
 from tgbot.handlers.echo import register_echo
 from tgbot.handlers.highprice import register_highprice
+from tgbot.handlers.search_history import register_history
 from tgbot.handlers.lowprice import register_lowprice
 from tgbot.handlers.polling import register_polling
 from tgbot.handlers.result import register_result
@@ -42,6 +43,7 @@ def register_all_handlers(dp):
     register_bestdeal(dp)
     register_polling(dp)
     register_result(dp)
+    register_history(dp)
 
     register_echo(dp)
 

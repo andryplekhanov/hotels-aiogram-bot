@@ -29,10 +29,11 @@ async def get_cities_group(message: Message, config: Config, state: FSMContext):
 
 async def clarify_city(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
     """
-        Функция, реагирующая на нажатие кнопки с выбором конкретного города.
-        Записывает состояния пользователя 'city_id' и 'city_name' выбранного города.
-        Предлагает ввести количество отелей через инлайн-клавиатуру.
-        """
+    Функция, реагирующая на нажатие кнопки с выбором конкретного города.
+    Записывает состояния пользователя 'city_id' и 'city_name' выбранного города.
+    Предлагает ввести количество отелей через инлайн-клавиатуру.
+    """
+
     await call.message.edit_reply_markup(reply_markup=None)
     async with state.proxy() as data:
         data['city_id'] = callback_data.get('city_id')

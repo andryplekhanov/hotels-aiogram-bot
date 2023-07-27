@@ -32,6 +32,19 @@ amount_hotels = InlineKeyboardMarkup(
 )
 
 
+# Клавиатура с выбором действия с историей поиска
+history_choice = InlineKeyboardMarkup(
+    row_width=1, inline_keyboard=[
+        [
+            InlineKeyboardButton(text='Показать историю', callback_data='show_history')
+        ],
+        [
+            InlineKeyboardButton(text='Очистить историю', callback_data='clear_history')
+        ],
+    ]
+)
+
+
 def show_prev_next_callback(current_page: int, hotel_id: str, hotel_name: str) -> InlineKeyboardMarkup:
     """
     Клавиатура с кнопками "Вперёд" и "Назад".
