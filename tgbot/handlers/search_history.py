@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 async def history(message: Message, state: FSMContext):
     await state.finish()
+    await message.delete()
     await message.answer('Выберите действие:', reply_markup=history_choice)
 
 
@@ -39,7 +40,11 @@ async def clarify_history(call: CallbackQuery, callback_data: dict, state: FSMCo
 async def clear_history(call: CallbackQuery):
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.delete()
-    await call.message.answer('clear_history')
+    result = await orm.clear_history(call.message.bot.get('db'), call.from_user.id)
+    if result:
+        await call.message.answer('История очищена')
+    else:
+        await call.message.answer('История пуста')
 
 
 def register_history(dp: Dispatcher):

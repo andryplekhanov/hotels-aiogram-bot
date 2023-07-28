@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from tgbot.models.models import User, Request, Result
 
@@ -55,6 +55,18 @@ async def get_history(async_session, user_id):
         except Exception as ex:
             logger.error(f"FAIL 'get_history': {ex}")
             return None
+
+
+async def clear_history(async_session, user_id):
+    async with async_session() as session:
+        try:
+            await session.execute(delete(Request).where(Request.user_id == user_id))
+            await session.commit()
+            logger.info(f"History from '{user_id}' was removed from DB")
+            return True
+        except Exception as ex:
+            logger.error(f"FAIL 'clear_history': {ex}")
+            return False
 
 
 async def get_search_result(async_session, history_id):
