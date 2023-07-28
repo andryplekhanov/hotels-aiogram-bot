@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
     """
-    Функция делает запрос в request_to_api и десериализирует результат. Если запрос получен и десериализация прошла -
+    Функция делает запрос в request_to_api и десериализирует результат.
+    Если запрос получен и десериализация прошла -
     возвращает обработанный результат в виде словаря, иначе None.
     """
 
@@ -81,8 +82,8 @@ async def parse_hotels(states: dict, config: Config) -> Union[dict, None]:
     
 async def process_hotels_info(hotels_info_list: List[dict], states: dict) -> dict[str, dict]:
     """
-    Функция получает список словарей - результат парсинга отелей, выбирает нужную информацию, обрабатывает и складывает
-    в словарь hotels_info_dict
+    Функция получает список словарей - результат парсинга отелей,
+    выбирает нужную информацию, обрабатывает и складывает в словарь hotels_info_dict
     """
 
     logger.info("Start hotels_info processing")
@@ -127,6 +128,7 @@ async def get_hotel_info_str(hotel_data: dict, state: FSMContext) -> str:
     Функция преобразует данные по отелю из словаря в строку с html.
     Используется для вывода информации через сообщение.
     """
+
     states = await state.get_data()
     adult = states.get('amount_adults') if states.get('amount_adults') else 1
 

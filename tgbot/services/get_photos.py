@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 async def parse_photos(hotel_id: str, config: Config) -> Union[types.MediaGroup, None]:
     """
-    Функция делает запрос в request_to_api и десериализирует результат. Если запрос получен и десериализация прошла -
+    Функция делает запрос в request_to_api и десериализирует результат.
+    Если запрос получен и десериализация прошла -
     возвращает обработанный результат в виде медиагруппы, иначе None.
     """
 
@@ -50,8 +51,8 @@ async def parse_photos(hotel_id: str, config: Config) -> Union[types.MediaGroup,
     
 async def process_photos(photos_list: List[dict]) -> Union[types.MediaGroup, None]:
     """
-    Функция получает список словарей - результат парсинга фоток, выбирает нужную информацию, обрабатывает и складывает
-    в медиагрупу.
+    Функция получает список словарей - результат парсинга фоток,
+    выбирает нужную информацию, обрабатывает и складывает в медиагрупу.
     """
 
     logger.info("Start photo processing")

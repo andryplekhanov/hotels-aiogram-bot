@@ -10,7 +10,7 @@ from tgbot.keyboards.inline import print_cities, amount_hotels
 from tgbot.misc.factories import for_city, for_hotels
 from tgbot.misc.states import UsersStates
 from tgbot.services.get_cities import parse_cities_group
-from tgbot.services.ready_for_answer import print_answer, get_prereply_str
+from tgbot.services.ready_for_answer import prepare_answer, get_prereply_str
 
 
 async def get_cities_group(message: Message, config: Config, state: FSMContext):
@@ -48,7 +48,7 @@ async def get_amount_hotels(call: CallbackQuery, callback_data: dict, state: FSM
     """
     Функция, ожидающая ввод количества отелей.
     Записывает состояние пользователя 'amount_hotels'.
-    Показывает клавиатуру с выбором количества фотографий.
+    Показывает клавиатуру с выбором даты заезда.
     """
 
     await call.message.edit_reply_markup(reply_markup=None)
@@ -57,6 +57,7 @@ async def get_amount_hotels(call: CallbackQuery, callback_data: dict, state: FSM
         data['amount_hotels'] = hotels_number
     await state.reset_state(with_data=False)
     await call.message.answer('Введите дату заезда', reply_markup=await DialogCalendar().start_calendar())
+    await call.message.delete()
 
 
 async def process_startdate_calendar(call: CallbackQuery, callback_data: dict, state: FSMContext):
@@ -68,11 +69,11 @@ async def process_startdate_calendar(call: CallbackQuery, callback_data: dict, s
 
     selected, sdate = await DialogCalendar().process_selection(call, callback_data)
     if selected:
-        # await call.message.answer(f'{sdate.strftime("%d.%m.%Y")}')
         async with state.proxy() as data:
             data['start_date'] = sdate
         await UsersStates.amount_nights.set()
         await call.message.answer('Введите количество ночей')
+        await call.message.delete()
 
 
 async def get_amount_nights(message: Message, config: Config, state: FSMContext):
@@ -100,11 +101,12 @@ async def get_amount_nights(message: Message, config: Config, state: FSMContext)
     if states.get('last_command') in ['highprice', 'lowprice']:
         prereply_str = await get_prereply_str(state)
         await message.answer(prereply_str)
-        await print_answer(message, config, state)
+        await prepare_answer(message, config, state)
         await state.reset_state(with_data=False)
     else:
         await UsersStates.amount_adults.set()
         await message.answer("Введите количество взрослых гостей на 1 номер:")
+    await message.delete()
 
 
 async def get_amount_adults(message: Message, config: Config, state: FSMContext):
@@ -126,6 +128,7 @@ async def get_amount_adults(message: Message, config: Config, state: FSMContext)
 
     await UsersStates.start_price.set()
     await message.answer('Введите минимальную цену за ночь $:')
+    await message.delete()
 
 
 async def get_start_price(message: Message, config: Config, state: FSMContext):
@@ -147,6 +150,7 @@ async def get_start_price(message: Message, config: Config, state: FSMContext):
 
     await UsersStates.end_price.set()
     await message.answer("Введите максимальную цену за ночь $:")
+    await message.delete()
 
 
 async def get_end_price(message: Message, config: Config, state: FSMContext):
@@ -168,6 +172,7 @@ async def get_end_price(message: Message, config: Config, state: FSMContext):
 
     await UsersStates.end_distance.set()
     await message.answer("Введите максимальное расстояние до цента в км:")
+    await message.delete()
 
 
 async def get_end_distance(message: Message, config: Config, state: FSMContext):
@@ -190,8 +195,9 @@ async def get_end_distance(message: Message, config: Config, state: FSMContext):
 
     prereply_str = await get_prereply_str(state)
     await message.answer(prereply_str)
-    await print_answer(message, config, state)
+    await prepare_answer(message, config, state)
     await state.reset_state(with_data=False)
+    await message.delete()
 
 
 def register_polling(dp: Dispatcher):

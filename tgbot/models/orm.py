@@ -1,13 +1,21 @@
 import logging
+from typing import Union, Sequence
 
+from aiogram.dispatcher import FSMContext
 from sqlalchemy import select, delete
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from tgbot.models.models import User, Request, Result
 
 logger = logging.getLogger(__name__)
 
 
-async def add_user(async_session, user_id):
+async def add_user(async_session: async_sessionmaker, user_id: int) -> None:
+    """
+    Функция делает запрос к БД, получает всех сохранённых пользователей.
+    Если текущего пользователя нет в списке, то сохраняет его в БД.
+    """
+
     async with async_session() as session:
         user = await session.execute(select(User).where(User.id == user_id))
         all_users = user.scalars().all()
@@ -19,7 +27,17 @@ async def add_user(async_session, user_id):
             logger.info(f"User '{user_id}' was added to DB")
 
 
-async def save_search_history(async_session, user_id, state, all_results):
+async def save_search_history(
+        async_session: async_sessionmaker,
+        user_id: int,
+        state: FSMContext,
+        all_results: list) -> None:
+    """
+    Функция сохраняет результат поиска для конкретного пользователя (user_id).
+    Создаётся экземпляр класса Request в связке с User (foreign key).
+    Создаётся экземпляр класса Result в связке с Request (foreign key).
+    """
+
     states = await state.get_data()
 
     async with async_session() as session:
@@ -47,7 +65,11 @@ async def save_search_history(async_session, user_id, state, all_results):
         logger.info(f"History from '{user_id}' was added to DB")
 
 
-async def get_history(async_session, user_id):
+async def get_history(async_session: async_sessionmaker, user_id: int) -> Union[Sequence, None]:
+    """
+    Функция делает запрос к БД и возвращает историю запросов конкретного пользователя либо None.
+    """
+
     async with async_session() as session:
         try:
             requests = await session.execute(select(Request).where(Request.user_id == user_id))
@@ -57,7 +79,11 @@ async def get_history(async_session, user_id):
             return None
 
 
-async def clear_history(async_session, user_id):
+async def clear_history(async_session: async_sessionmaker, user_id: int) -> bool:
+    """
+    Функция удаляет историю конкретного пользователя из БД.
+    """
+
     async with async_session() as session:
         try:
             await session.execute(delete(Request).where(Request.user_id == user_id))
@@ -69,7 +95,11 @@ async def clear_history(async_session, user_id):
             return False
 
 
-async def get_search_result(async_session, history_id):
+async def get_search_result(async_session: async_sessionmaker, history_id: str) -> Union[Sequence, None]:
+    """
+    Функция делает запрос к БД и возвращает результат конкретного запроса либо None.
+    """
+
     async with async_session() as session:
         try:
             results = await session.execute(select(Result).where(Result.request_id == int(history_id)))

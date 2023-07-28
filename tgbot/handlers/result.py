@@ -8,7 +8,7 @@ from tgbot.misc.factories import for_photo
 from tgbot.services.get_photos import parse_photos
 
 
-async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
+async def flipping_pages_back(call: CallbackQuery, state: FSMContext) -> None:
     """
     Функция-пагинатор для перелистывания НАЗАД страниц с результатом поиска
     """
@@ -35,7 +35,7 @@ async def flipping_pages_back(call: CallbackQuery, state: FSMContext):
         pass
 
 
-async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
+async def flipping_pages_forward(call: CallbackQuery, state: FSMContext) -> None:
     """
     Функция-пагинатор для перелистывания ВПЕРЕД страниц с результатом поиска
     """
@@ -61,14 +61,13 @@ async def flipping_pages_forward(call: CallbackQuery, state: FSMContext):
         pass
 
 
-async def get_photos(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
+async def get_photos(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config) -> None:
     """
     Функция, ожидающая нажатие кнопки "Загрузить фото отеля".
     Вызывает парсер фотографий к конкретному отелю. ID отеля находится в callback_data.
     Выводит медиагруппу фото.
     """
 
-    states = await state.get_data()
     hotel_id = callback_data.get('hotel_id')
     hotel_name = callback_data.get('hotel_name')
     await call.message.answer(f'Загружаю фото к отелю <b>{hotel_name}</b>', parse_mode='html')

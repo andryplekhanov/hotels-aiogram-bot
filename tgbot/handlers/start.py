@@ -6,7 +6,12 @@ from tgbot.models import orm
 from tgbot.services.default_commands import get_default_commands
 
 
-async def start(message: Message, state: FSMContext):
+async def start(message: Message, state: FSMContext) -> None:
+    """
+    Функция, реагирующая на команду 'start'.
+    Выводит приветственное сообщение с описанием команд.
+    """
+
     await state.finish()
     await orm.add_user(message.bot.get('db'), message.from_user.id)
     text = f'Привет, {message.from_user.username}! Я бот, который подберет тебе отель.'

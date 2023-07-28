@@ -6,6 +6,13 @@ from tgbot.services.api_requests import request_to_api
 
 
 async def parse_cities_group(city: str, config: Config) -> Union[List[Tuple], None]:
+    """
+    Функция-парсер городов.
+    Получает строку с названием города,
+    отправляет его в request_to_api для запроса по API и десериализирует результат.
+    Возвращает список словарей либо None.
+    """
+
     url = config.misc.url_search
     querystring = {"q": city, "locale": "ru_RU"}
 

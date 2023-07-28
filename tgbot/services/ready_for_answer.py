@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 async def get_prereply_str(state: FSMContext) -> str:
+    """
+    Функция возвращает строку - сообщение для пользователя с агрегированной информацией об его запросе.
+    """
+
     states = await state.get_data()
     sort_order = 'дешёвых' if states.get('last_command') == 'lowprice' else 'дорогих'
 
@@ -31,7 +35,13 @@ async def get_prereply_str(state: FSMContext) -> str:
     return prereply_str
 
 
-async def print_answer(message: Message, config: Config, state: FSMContext) -> None:
+async def prepare_answer(message: Message, config: Config, state: FSMContext) -> None:
+    """
+    Функция отправляет запрос на парсинг отелей (parse_hotels).
+    Если результат получен, обрабатывает результат, сохраняет его в БД (save_search_history)
+    и вызывает функцию печати результата (print_answer).
+    """
+
     logger.info("Start 'print_answer'")
     states = await state.get_data()
     hotels = await parse_hotels(states, config)
@@ -53,20 +63,29 @@ async def print_answer(message: Message, config: Config, state: FSMContext) -> N
             state=state,
             all_results=h_info_list
         )
-        await print_nophoto_answer(message, state, h_info_list)
+        await print_answer(message, state, h_info_list)
     else:
         logger.error("FAIL: can't get hotels")
         await message.answer("⚠️ Ничего не найдено по вашему запросу. Попробуйте ещё раз.")
 
 
 async def process_search_result(state: FSMContext, search_results: list) -> list:
+    """
+    Функция обрабатывает результат запроса к БД и возвращает его в виде списка
+    для последующей передачи в функцию print_answer.
+    """
+
     h_info_list = [(result.hotel_id, result.hotel_name, result.result_str) for result in search_results]
     async with state.proxy() as data:
         data['result'] = h_info_list
     return h_info_list
 
 
-async def print_nophoto_answer(message: Message, state: FSMContext, h_info_list: list) -> None:
+async def print_answer(message: Message, state: FSMContext, h_info_list: list) -> None:
+    """
+    Функция выводит результат поиска отелей в виде сообщения с инлайн-клавиатурой с пагинацией.
+    """
+
     async with state.proxy() as data:
         current_page = 0
         data['current_page'] = current_page

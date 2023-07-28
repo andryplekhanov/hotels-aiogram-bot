@@ -2,7 +2,11 @@ from aiogram import Dispatcher
 from aiogram.types import Message
 
 
-async def admin_start(message: Message):
+async def admin_start(message: Message) -> None:
+    """
+    Функция, реагирующая на команду 'start' от администратора.
+    Администраторы указываются в .env файле (ADMINS).
+    """
     await message.reply("Hello, admin!")
 
 
