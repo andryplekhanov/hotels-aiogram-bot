@@ -8,6 +8,14 @@ Base = declarative_base()
 
 
 class User(Base):
+    """
+    Класс пользователя.
+
+    Attributes:
+        id (int): уникальный id пользователя == id пользователя Telegram
+        connection_date (datetime.date): дата внесения пользователя в БД
+    """
+
     __tablename__ = 'user'
 
     id = mapped_column(BigInteger, autoincrement=False, primary_key=True, unique=True, index=True)
@@ -18,6 +26,17 @@ class User(Base):
 
 
 class Request(Base):
+    """
+    Класс запроса. Каждый успешный запрос пользователя к API сохраняется в экземпляре данного класса.
+
+    Attributes:
+        id (int): уникальный id запроса
+        user_id (User): указание на id пользователя - автора запроса
+        command (str): команда запроса, введенная пользователем
+        date (datetime.date): дата запроса
+        city_name (str): город, введенный пользователем для поиска отелей
+    """
+
     __tablename__ = 'request'
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True, index=True)
@@ -31,6 +50,17 @@ class Request(Base):
 
 
 class Result(Base):
+    """
+    Класс результата. Результат каждого успешного запроса пользователя к API сохраняется в экземпляре данного класса.
+
+    Attributes:
+        id (int): уникальный id результата
+        request_id (Request): указание на id запроса, к которому относится данный результат
+        hotel_id (str): id отеля, найденного в результате запроса
+        hotel_name (str): название отеля, найденного в результате запроса
+        result_str (str): подробное описание отеля (район, стоимость, удаленность от центра, рейтинг)
+    """
+
     __tablename__ = 'result'
 
     id = mapped_column(Integer, primary_key=True, autoincrement=True, index=True)
