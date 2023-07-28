@@ -4,10 +4,11 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from tgbot.config import Config
 from tgbot.keyboards.inline import history_choice, print_history
 from tgbot.misc.factories import for_history
 from tgbot.models import orm
+from tgbot.models.orm import get_search_result
+from tgbot.services.ready_for_answer import process_search_result, print_nophoto_answer
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,12 @@ async def show_history(call: CallbackQuery):
         await call.message.answer('История пуста')
 
 
-async def clarify_history(call: CallbackQuery, callback_data: dict, state: FSMContext, config: Config):
+async def clarify_history(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.delete()
-    await call.message.answer(f"{callback_data.get('history_id')}")
+    search_results = await get_search_result(call.message.bot.get('db'), callback_data.get('history_id'))
+    processed_result = await process_search_result(state, search_results)
+    await print_nophoto_answer(call.message, state, processed_result)
 
 
 async def clear_history(call: CallbackQuery):

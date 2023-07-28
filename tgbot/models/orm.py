@@ -55,3 +55,13 @@ async def get_history(async_session, user_id):
         except Exception as ex:
             logger.error(f"FAIL 'get_history': {ex}")
             return None
+
+
+async def get_search_result(async_session, history_id):
+    async with async_session() as session:
+        try:
+            results = await session.execute(select(Result).where(Result.request_id == int(history_id)))
+            return results.scalars().all()
+        except Exception as ex:
+            logger.error(f"FAIL 'get_search_result': {ex}")
+            return None

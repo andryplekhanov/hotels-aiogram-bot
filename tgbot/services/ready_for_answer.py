@@ -59,14 +59,21 @@ async def print_answer(message: Message, config: Config, state: FSMContext) -> N
         await message.answer("⚠️ Ничего не найдено по вашему запросу. Попробуйте ещё раз.")
 
 
+async def process_search_result(state: FSMContext, search_results: list) -> list:
+    h_info_list = [(result.hotel_id, result.hotel_name, result.result_str) for result in search_results]
+    async with state.proxy() as data:
+        data['result'] = h_info_list
+    return h_info_list
+
+
 async def print_nophoto_answer(message: Message, state: FSMContext, h_info_list: list) -> None:
     async with state.proxy() as data:
         current_page = 0
         data['current_page'] = current_page
-        await message.answer(data.get('result')[current_page][2],
+        await message.answer(h_info_list[current_page][2],
                              reply_markup=show_prev_next_callback(
                                  current_page=data.get('current_page'),
-                                 hotel_id=data.get('result')[current_page][0],
-                                 hotel_name=data.get('result')[current_page][1]
+                                 hotel_id=h_info_list[current_page][0],
+                                 hotel_name=h_info_list[current_page][1]
                              )
         )
