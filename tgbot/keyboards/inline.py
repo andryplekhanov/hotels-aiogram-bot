@@ -26,7 +26,7 @@ def print_history(requests_list: list) -> InlineKeyboardMarkup:
 
     keyboard = InlineKeyboardMarkup()
     for data in requests_list:
-        date = data.date.strftime("%d.%m.%Y")
+        date = data.date.strftime("%d.%m.%Y в %H:%M")
         keyboard.add(InlineKeyboardButton(text=f'{date} - {data.command} - {data.city_name}',
                                           callback_data=for_history.new(history_id=data.id)
                                           ))
