@@ -6,7 +6,7 @@ Telegram-бот для анализа сайта [Hotels.com](https://www.hotels
 - **Language** (язык): Russian
 - **Author** (Автор): [Андрей Плеханов](https://t.me/andryplekhanov)
 
-**Демонстрация работы программы:** [смотреть видео >>](https://youtu.be/krUpxz1SmEY)
+**Демонстрация работы программы:** [смотреть видео >>](https://youtu.be/KhSCAg0uD4U)
 
 ## Используемые технологии:
 - Python 3
